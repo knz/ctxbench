@@ -3,7 +3,7 @@
 #include <sys/syscall.h>
 #include <signal.h>
 #include <setjmp.h>
-
+#include <stdlib.h>
 
 
 #ifdef USE_X86
@@ -29,12 +29,18 @@ static unsigned  rdtsc (void)
 #endif
 
 volatile unsigned long long end = 0, start = 0;
-sigjmp_buf rst;
+jmp_buf rst;
 
-void handler(int x, siginfo_t* i, void *p)
+void handler1(int x, siginfo_t* i, void *p)
 {
     end = rdtsc();
-    siglongjmp(rst, 1);
+    longjmp(rst, 1);
+}
+
+void handler2(int unused)
+{
+    end = rdtsc();
+    longjmp(rst, 1);
 }
 
 #define BEGIN_MAIN \
@@ -56,13 +62,15 @@ void handler(int x, siginfo_t* i, void *p)
 #define END_MAIN(Prog)							\
     printf(Prog " cycles: min %llu max %llu avg %llu\n", min, max, total / NUM_CALLS)
 
-#define SETUP_SIGNAL(Sig)	\
+#define SETUP_SIGNAL(Sig) signal(Sig, &handler2)
+#define SETUP_SIGNAL1(Sig)	\
     do {			  \
 	struct sigaction sa;	    \
 	sigaction(Sig, 0, &sa);	    \
 	sigemptyset(&sa.sa_mask);	      \
-	sa.sa_sigaction = &handler;	      \
-	sa.sa_flags |= SA_SIGINFO|SA_RESTART; \
+	sa.sa_sigaction = &handler1;	      \
+	sa.sa_flags |= SA_SIGINFO; \
+	sa.sa_flags &= ~SA_RESETHAND; \
 	sigaction(Sig, &sa, 0);		      \
     } while(0)
     

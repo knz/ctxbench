@@ -1,6 +1,6 @@
 #include "common.c"
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     BEGIN_MAIN;
 
