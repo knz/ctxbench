@@ -30,13 +30,15 @@ static unsigned  rdtsc (void)
 
 #ifdef USE_RTCLOCK
 struct timespec end = {0,0}, start = {0,0};
-#define SAMPLE_TIME(Var) clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &Var)
+#define SAMPLE_TIME(Var) clock_gettime(CLOCK_MONOTONIC, &Var)
 #define TIME_DELTA(Var1, Var2) \
     ((Var1.tv_sec + 1e-9 * Var1.tv_nsec) - (Var2.tv_sec + 1e-9 * Var2.tv_nsec))
+#define TimeUnit "nsec"
 #else
 volatile unsigned long long end = 0, start = 0;
 #define SAMPLE_TIME(Var) Var = rdtsc()
 #define TIME_DELTA(Var1, Var2)  (1e-9 * (Var1 - Var2))
+#define TimeUnit "cycles"
 #endif
 
 sigjmp_buf rst;
@@ -67,7 +69,7 @@ void handler(int unused)
     SAMPLE_TIME(start); \
     SAMPLE_TIME(end); \
     double d = TIME_DELTA(end, start); \
-    if (delta == 0 || d < delta) delta = d; \
+    if (d != 0 && (delta == 0 || d < delta)) delta = d; \
     }
     
 
@@ -77,13 +79,14 @@ void handler(int unused)
 
 #define END_LOOP \
     double d = TIME_DELTA(end, start);	  \
+	if (d == 0) continue; \
         if (min == 0 || d < min) min = d; \
         if (d > max) max = d; \
         total += d; \
     } 
 
 #define END_MAIN(Prog)							\
-    printf(Prog " cycles: min %.1lf max %.1lf avg %.1lf delta %.1lf\n", 1e9*min, 1e9*max, 1e9* total / NUM_CALLS, 1e9 *delta)
+    printf(Prog " " TimeUnit " %.1lf %.1lf %.1lf %.1lf\n", 1e9*min, 1e9*max, 1e9* total / NUM_CALLS, 1e9 *delta)
 
 #ifdef USE_SIGNAL
 #define SETUP_SIGNAL(Sig) signal(Sig, &handler)
