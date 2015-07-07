@@ -6,9 +6,9 @@ int main(int argc, char **argv)
 
     BEGIN_LOOP {
 
-	start = rdtsc();
+	SAMPLE_TIME(start);
 	syscall(SYS_getpid);
-	end = rdtsc();
+	SAMPLE_TIME(end);
     }
     END_LOOP;
 

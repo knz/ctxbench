@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 
 	if (sigsetjmp(rst, 1) == 0)
 	{
-	    start = rdtsc();
+	    SAMPLE_TIME(start);
 	    *invalid = 123;
 	}
     }
