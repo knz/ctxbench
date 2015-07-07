@@ -8,9 +8,28 @@ int main(int argc, char **argv)
 
 	SAMPLE_TIME(start);
 	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
+	syscall(SYS_getpid);
 	SAMPLE_TIME(end);
     }
     END_LOOP;
 
-    END_MAIN("getpid");
+    END_MAIN("getpid20");
 }

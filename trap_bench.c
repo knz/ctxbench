@@ -10,7 +10,13 @@ int main(int argc, char **argv)
 	if (sigsetjmp(rst,1) == 0)
 	{
 	    SAMPLE_TIME(start);
-	    __asm__ __volatile__("int3");
+#ifdef USE_X86
+  __asm__ __volatile__("int3");
+#endif
+
+#ifdef USE_ARM
+  __asm__ __volatile__("bkpt");
+#endif
 	}
     }
     END_LOOP;
