@@ -29,19 +29,23 @@ static unsigned  rdtsc (void)
 #endif
 
 volatile unsigned long long end = 0, start = 0;
-jmp_buf rst;
+sigjmp_buf rst;
 
-void handler1(int x, siginfo_t* i, void *p)
+#ifdef USE_SIGINFO
+void handler(int x, siginfo_t* i, void *p)
 {
     end = rdtsc();
-    longjmp(rst, 1);
+    siglongjmp(rst, 1);
 }
+#endif
 
-void handler2(int unused)
+#ifdef USE_SIGNAL
+void handler(int unused)
 {
     end = rdtsc();
-    longjmp(rst, 1);
+    siglongjmp(rst, 1);
 }
+#endif
 
 #define BEGIN_MAIN \
     int NUM_CALLS = argv[1] ? atoi(argv[1]) : 10000;	\
@@ -62,15 +66,19 @@ void handler2(int unused)
 #define END_MAIN(Prog)							\
     printf(Prog " cycles: min %llu max %llu avg %llu\n", min, max, total / NUM_CALLS)
 
-#define SETUP_SIGNAL(Sig) signal(Sig, &handler2)
-#define SETUP_SIGNAL1(Sig)	\
+#ifdef USE_SIGNAL
+#define SETUP_SIGNAL(Sig) signal(Sig, &handler)
+#endif
+
+#ifdef USE_SIGINFO
+#define SETUP_SIGNAL(Sig)	\
     do {			  \
 	struct sigaction sa;	    \
 	sigaction(Sig, 0, &sa);	    \
 	sigemptyset(&sa.sa_mask);	      \
-	sa.sa_sigaction = &handler1;	      \
+	sa.sa_sigaction = &handler;	      \
 	sa.sa_flags |= SA_SIGINFO; \
 	sa.sa_flags &= ~SA_RESETHAND; \
 	sigaction(Sig, &sa, 0);		      \
     } while(0)
-    
+#endif

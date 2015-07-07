@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     BEGIN_LOOP {
 	SETUP_SIGNAL(SIGTRAP);
 
-	if (setjmp(rst) == 0)
+	if (sigsetjmp(rst,1) == 0)
 	{
 	    start = rdtsc();
 	    __asm__ __volatile__("int3");
